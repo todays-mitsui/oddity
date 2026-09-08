@@ -1,0 +1,17 @@
+[package]
+name = "oddity"
+version = "0.1.0"
+edition = "2021"
+description = "A joke programming language where the parity of term count decides the meaning"
+
+[[bin]]
+name = "oddity"
+path = "src/main.rs"
+
+[lib]
+name = "oddity"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+opt-level = 2

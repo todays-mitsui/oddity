@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oddity — 奇数項なら式、偶数項なら宣言</title>
+<meta name="description" content="項数の奇偶が意味を決めるジョーク言語。オペレータとオペランドを字種で区別せず、役割は位置だけで決まる。ブラウザで動かせます。">
+<meta property="og:title" content="oddity">
+<meta property="og:description" content="奇数項なら式、偶数項なら宣言。項数の奇偶が意味を決める言語。">
+<link rel="stylesheet" href="./style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27 font-family=%27monospace%27%3E%3F%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav><div class="wrap">
+  <b>oddity</b>
+  <a href="#concept">概念</a>
+  <a href="#play">試す</a>
+  <a href="#tour">ツアー</a>
+  <a href="#mines">地雷</a>
+  <a href="./spec.html">仕様</a>
+  <span class="spacer"></span>
+  <a href="https://github.com/todays-mitsui/oddity" data-repo>GitHub</a>
+</div></nav>
+
+<header><div class="wrap">
+  <h1>oddity</h1>
+  <p class="tagline">奇数項なら式、偶数項なら宣言。</p>
+  <p class="sub">項数の奇偶が意味を決める言語。オペレータとオペランドを字種で区別せず、役割は<b>位置</b>だけで決まる。優先順位すら実行時に環境から引く。</p>
+</div></header>
+
+<section><div class="wrap">
+<pre><code data-odd>(n fact d
+    (n &lt;= 1) ? 1 : {n * ((n - 1) fact d)}
+) ;
+1 &lt;&lt;&lt; "10! = " &lt;&lt;&lt; (10 fact ()) &lt;&lt;&lt; "\n"</code></pre>
+<div class="out">10! = 3628800
+</div>
+<p class="note">3項のシグネチャ + 5項の本体 = 8項。偶数なので関数宣言になる。ループは再帰しかなく、<code>let rec</code> も Y コンビネータも要らない。</p>
+</div></section>
+
+<section id="concept"><div class="wrap">
+  <h2>Concept</h2>
+  <p class="lead">決めたのは3つだけ。あとは全部そこから出てくる。</p>
+  <div class="cards">
+    <div class="card">
+      <h3>空白が唯一の区切り</h3>
+      <p><code>(x + y)</code> は3項で演算。<code>(x+y)</code> は1項で、<code>x+y</code> という名前の変数への参照。<code>1-1</code> は数ですらない。</p>
+    </div>
+    <div class="card">
+      <h3>項数の奇偶が意味を決める</h3>
+      <p>奇数項なら式で、奇数番目がオペランド、偶数番目がオペレータ。4以上の偶数項なら関数宣言で、シグネチャ3項＋本体。0項はユニット値、2項は構文エラー。</p>
+    </div>
+    <div class="card">
+      <h3>順位は束縛の属性</h3>
+      <p>トークンが <code>;</code> か <code>+</code> かをパーサは知りようがない。だから静的な優先順位表を持てない。順位は括弧を評価する直前に、環境から引く。</p>
+    </div>
+  </div>
+
+  <h3>空白1つで別の言語になる</h3>
+<pre><code data-odd>x = 2 ; y = 3 ; 1 &lt;&lt;&lt; (x + y)</code></pre>
+<div class="out">5</div>
+<pre><code data-odd>x = 2 ; y = 3 ; 1 &lt;&lt;&lt; (x+y)</code></pre>
+<div class="out">x+y</div>
+<p class="note">後者は未束縛トークンなので、自己評価フレームがシンボルとして自分自身を返す。<b>未定義エラーは存在しない。</b></p>
+</div></section>
+
+<section id="hl"><div class="wrap">
+  <h2>Highlighting</h2>
+  <p class="lead">構文ハイライトは原理的に不可能。ただし1種類だけ例外がある。</p>
+  <p>順位が実行時の値である以上、<b>どう結合するか</b>は静的には塗れない。だが<b>役割</b>のほうは、括弧の対応が取れた時点で確定する。このページのコードはすべて、処理系本体のレキサとパーサが返した役割そのままで塗ってある。</p>
+  <div class="legend">
+    <span class="r0">オペランド</span>
+    <span class="r1">オペレータ</span>
+    <span class="r2">仮引数</span>
+    <span class="r3">関数名</span>
+    <span class="r4">構文エラー</span>
+  </div>
+  <p>だから、こういう事故が目で見える。<code>==</code> の途中に空白を1つ入れると4項＝偶数＝関数宣言になり、シグネチャの2番目が<b>関数名として潰される</b>。構文エラーは出ない。</p>
+<pre><code data-odd>1 &lt;&lt;&lt; (a == b)</code></pre>
+<div class="out">()</div>
+<pre><code data-odd>1 &lt;&lt;&lt; (a = = b)</code></pre>
+<div class="out">&lt;fn =&gt;</div>
+<p class="note"><code>==</code> <code>!=</code> <code>!!</code> <code>&lt;=</code> <code>&gt;=</code> <code>&lt;&lt;&lt;</code> <code>&gt;&gt;&gt;</code> <code>++</code> <code>|&gt;</code> <code>&amp;&amp;</code> <code>||</code> のすべてが同じ形の地雷を持つ。</p>
+</div></section>
+
+<section id="play"><div class="wrap">
+  <h2>Playground</h2>
+  <p class="lead">ブラウザで動く。</p>
+  <p class="note">動かしているのはインタプリタ本体をそのまま WebAssembly にしたもの。実行は <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>。ブラウザのスタックの都合で、再帰は500段まで。</p>
+  <div class="pg">
+    <div class="pg-bar">
+      <select id="picker"></select>
+      <button class="run" id="run" disabled>実行</button>
+      <span class="badge" id="badge">読み込み中…</span>
+    </div>
+    <div class="editor">
+      <pre aria-hidden="true"><code id="hl"></code></pre>
+      <textarea id="src" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    </div>
+    <div class="pg-io">
+      <div><label for="stdin">標準入力</label><textarea id="stdin" spellcheck="false"></textarea></div>
+      <div><label for="result">出力</label><div class="result" id="result"></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="tour"><div class="wrap">
+  <h2>Tour</h2>
+  <p class="lead">位置で決まる世界の歩き方。</p>
+  <div class="tour">
+<div><h3>すべての関数は2引数、適用は常に中置 <span>§3</span></h3><p>関数呼び出し構文は存在しない。演算子適用そのものが呼び出しで、<code>+</code> も <code>fact</code> も同格。1引数が欲しければダミー引数、3引数以上が欲しければクロージャを返す。</p><pre><code data-odd>(a plus b (a + b)) ; 1 &lt;&lt;&lt; (2 plus 3)</code></pre>
+<div class="out">5</div></div>
+<div><h3><code>()</code> と <code>{}</code> の差は、環境を汚すかどうかだけ <span>§2.2</span></h3><p><code>{}</code> はフレームを1枚積む。同じ <code>=</code> が、囲む括弧の字種だけで「関数型の束縛」と「命令型の代入」を行き来する。</p><pre><code data-odd>x = 1 ; {x = 2 ; (1 &lt;&lt;&lt; x)} ; (1 &lt;&lt;&lt; x)</code></pre>
+<div class="out">21</div></div>
+<div><h3>再帰に <code>let rec</code> も Y コンビネータも要らない <span>§2.3</span></h3><p><code>{}</code> の偶数項は無名関数を返す。捨てられるフレームの中に関数自身の名前が束縛されていて、クロージャがそのフレームを捕まえているから、名前は生き残る。</p><pre><code data-odd>f = {n fact d (n &lt;= 1) ? 1 : {n * ((n - 1) fact d)}} ; 1 &lt;&lt;&lt; (5 f ())</code></pre>
+<div class="out">120</div></div>
+<div><h3>三項演算子ではなく、二項演算子2つ <span>§8.3</span></h3><p><code>(b ? t : f)</code> は5項で、左結合により <code>((b ? t) : f)</code>。偽が <code>()</code> だけなので、<code>?</code>（ガード）と <code>:</code>（Elvis）は単一の述語の裏表になる。3つ目の <code>!</code> は unless。</p><pre><code data-odd>1 &lt;&lt;&lt; (1 ? "t" : "f") &lt;&lt;&lt; (() ? "t" : "f") &lt;&lt;&lt; (() ! "u")</code></pre>
+<div class="out">tfu</div></div>
+<div><h3>リストに終端は無い。マッチが判定を兼ねる <span>§8.2</span></h3><p><code>,</code> は二分木を作るだけで、リストとはその左スパインのこと。だから空リストが存在せず、<code>isEmpty</code> も要らない。要るのは <code>isPair</code> で、それは分割代入そのもの。</p><pre><code data-odd>xs = 1 , 2 , 3 ; (rest , y = xs) ; 1 &lt;&lt;&lt; rest &lt;&lt;&lt; " と " &lt;&lt;&lt; y</code></pre>
+<div class="out">(1 , 2) と 3</div></div>
+<div><h3>マッチ失敗はエラーではなく <code>()</code> <span>§8.1, §8.7</span></h3><p>予期される失敗は <code>()</code> で表して <code>?</code> <code>:</code> で処理する。プログラマの誤りは <code>!!</code> で、こちらは catch が無いので必ず最外まで飛ぶ。昇格は1行で書ける。</p><pre><code data-odd>1 &lt;&lt;&lt; (a , b = 5)</code></pre>
+<div class="out">()</div></div>
+<div><h3>演算子が何をするかは途中で変えられる <span>§4.5</span></h3><p>順位はグルーピング時に、関数は評価時に引かれる。同じ束縛の2つの側面が別のタイミングで参照されるので、中身の差し替えは即座に効くが、結合の仕方はそのブロックでは変わらない。</p><pre><code data-odd>(1 &lt;&lt;&lt; (1 + 2 * 3)) ; * = + ; (1 &lt;&lt;&lt; (1 + 2 * 3))</code></pre>
+<div class="out">96</div></div>
+  </div>
+</div></section>
+
+<section id="mines"><div class="wrap">
+  <h2>Mines</h2>
+  <p class="lead">仕様に「地雷一覧」という節がある。</p>
+  <p>どれも設計の帰結であって、バグではない。エラーが出ないものだけを選んである。</p>
+
+  <h3><code>;</code> を1つ書き忘れると、ブロックが静かに関数宣言に化ける</h3>
+<pre><code data-odd>(1 &lt;&lt;&lt; "a") ; (1 &lt;&lt;&lt; "b") (1 &lt;&lt;&lt; "c")</code></pre>
+<div class="out">（何も出ない。終了コード 0）</div>
+<p class="note">4項＝偶数なので宣言になり、<code>(1 &lt;&lt;&lt; "a")</code> と <code>(1 &lt;&lt;&lt; "b")</code> はシグネチャとして評価されずに消える。ただし<b>2文だけのブロックは守られる</b>。<code>;</code> を落とすと2項＝構文エラーになるので。3文以上だけが黙って化ける。</p>
+
+  <h3><code>1 = 1 + 1</code> は恒等式の顔をしたアキュムレータ</h3>
+<pre><code data-odd>1 = 1 + 1 ; 2 &lt;&lt;&lt; 1</code></pre>
+<div class="out">2（標準エラーへ）</div>
+<p class="note">数値フレームは無限なので、<code>=</code> がそこで既存の束縛に当たることは原理的にない。遮蔽は常に「新規作成」＝積み増しになる。実行するたび倍。<code>2 = 5</code> と書けば標準エラーが消える。</p>
+
+  <h3><code>(b ? () : f)</code> は真でも <code>f</code> を返す</h3>
+<pre><code data-odd>1 &lt;&lt;&lt; (1 ? () : "f")</code></pre>
+<div class="out">f</div>
+<p class="note">真の枝の値が <code>()</code> だと <code>:</code> が必ず発火する。否定を素朴に <code>(b ? () : 1)</code> と書くと常に 1 になる。これが3つ目の短絡演算子 <code>!</code> を組み込みで持つべき理由になっている。</p>
+
+  <h3>シンボルと数は印字が同一で区別できない</h3>
+<pre><code data-odd>1 &lt;&lt;&lt; "1" &lt;&lt;&lt; " " &lt;&lt;&lt; 1 &lt;&lt;&lt; " " &lt;&lt;&lt; ("1" == 1)</code></pre>
+<div class="out">1 1 ()</div>
+<p class="note">引用はクォートであって型ではない。<code>"1"</code> はシンボル <code>1</code> であって数ではないので、数値フレームを通らない。代わりに、数を潰したあとの un-shadow 手段になる。</p>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+  <h2>Gallery</h2>
+  <p class="lead">事故で手に入ったもの。</p>
+
+  <h3>数式処理系</h3>
+  <p>未束縛トークンは自己評価し、シンボルを適用しようとして失敗すると記号項というデータが残る。専用機構はゼロ。</p>
+<pre><code data-odd>1 &lt;&lt;&lt; (x + y) &lt;&lt;&lt; " " &lt;&lt;&lt; (+ * /)</code></pre>
+<div class="out">(x + y) (+ * /)</div>
+<h3>難読化</h3>
+  <p>役割が位置だけで決まるということは、<b>綴りに意味が無い</b>ということでもある。下は FizzBuzz で、関数名が fopen（切り詰め書き込み）を潰している。<code>1 -&gt;&gt; 5</code> は「fd 5 を開く式」に完全に化けている。</p>
+<pre><code data-odd>(&lt;&lt; -&gt;&gt; &gt;&gt; &lt;&lt; &gt; &gt;&gt; ! (1 &lt;&lt;&lt; &lt;&lt; % 15 == 0 ? "FizzBuzz" : (&lt;&lt; % 3 == 0 ? "Fizz") : (&lt;&lt; % 5 == 0 ? "Buzz") : &lt;&lt; &lt;&lt;&lt; "\n" ; &lt;&lt; + 1 -&gt;&gt; &gt;&gt;)) ; 1 -&gt;&gt; 5</code></pre>
+<div class="out">1
+2
+Fizz
+4
+Buzz
+</div>
+<p class="note">上のハイライトを見れば、どれがオペレータでどれがオペランドかは分かる。<b>それ以上のことは誰にも分からない。</b></p>
+</div></section>
+
+<section id="get"><div class="wrap">
+  <h2>Get it</h2>
+  <p class="lead">Rust で書かれた実装が1つある。</p>
+  <pre><code>git clone <span data-repo-text>https://github.com/todays-mitsui/oddity</span>
+cd oddity
+cargo build --release
+
+./target/release/oddity examples/fizzbuzz.odd
+./target/release/oddity -e '1 &lt;&lt;&lt; "Hello\n"'
+./target/release/oddity --ast examples/fact.odd</code></pre>
+  <p class="note">依存クレートはゼロ。<code>--ast</code> は項の入れ子だけを表示する。結合は実行時に決まるので出せない。</p>
+</div></section>
+
+<footer><div class="wrap">
+  <p><a href="./spec.html">言語仕様</a> ・ <a href="https://github.com/todays-mitsui/oddity" data-repo>GitHub</a> ・ <a href="#play">プレイグラウンド</a></p>
+  <p>プログラム全体は暗黙のパーレンで囲まれている。</p>
+</div></footer>
+
+<script src="./app.js"></script>
+</body>
+</html>

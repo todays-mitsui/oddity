@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>言語仕様 — oddity</title>
+<meta name="description" content="oddity の言語仕様。字句・偶奇・優先順位・環境・プレリュード演算子・地雷一覧。">
+<link rel="stylesheet" href="./style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27 font-family=%27monospace%27%3E%3F%3C/text%3E%3C/svg%3E">
+<style>
+  .doc { padding: 40px 0 64px; }
+  .doc h1 { font-size: 34px; letter-spacing: -.02em; font-family: var(--sans); margin: 0 0 24px; }
+  .doc h2 {
+    font-size: 24px; font-family: var(--sans); font-weight: 700;
+    letter-spacing: -.01em; text-transform: none; color: var(--fg);
+    margin: 52px 0 12px; padding-top: 20px; border-top: 1px solid var(--line);
+  }
+  .doc h3 { font-size: 18px; margin: 32px 0 8px; }
+  .doc blockquote {
+    margin: 0 0 16px; padding: 2px 0 2px 18px;
+    border-left: 3px solid var(--accent); color: var(--fg);
+  }
+  .doc hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
+  .toc { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 0 0 40px; }
+  .toc ol { margin: 0; padding-left: 1.4em; columns: 2; column-gap: 32px; font-size: 14px; }
+  @media (max-width: 640px) { .toc ol { columns: 1; } }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .loading { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <b><a href="./" style="color:inherit;text-decoration:none">oddity</a></b>
+  <a href="./#concept">概念</a>
+  <a href="./#play">試す</a>
+  <a href="./#tour">ツアー</a>
+  <a href="./#mines">地雷</a>
+  <a href="./spec.html">仕様</a>
+  <span class="spacer"></span>
+  <a href="https://github.com/todays-mitsui/oddity" data-repo>GitHub</a>
+</div></nav>
+
+<div class="wrap doc">
+  <div id="toc" class="toc" hidden><b>目次</b><ol id="toc-list"></ol></div>
+  <div id="doc"><p class="loading">仕様を読み込み中…</p></div>
+</div>
+
+<script src="./vendor/marked.min.js"></script>
+<script src="./app.js"></script>
+<script>
+// 仕様は docs/spec.md をそのまま描画する。サイトが仕様から遅れないように。
+(async () => {
+  const target = document.getElementById("doc");
+  try {
+    const res = await fetch("./spec.md");
+    if (!res.ok) throw new Error(res.status);
+    const md = await res.text();
+    marked.setOptions({ gfm: true, breaks: false });
+    target.innerHTML = marked.parse(md);
+  } catch (e) {
+    target.innerHTML =
+      '<p>仕様を読み込めなかった（' + e.message + '）。' +
+      '<a href="#" data-repo-spec>GitHub で読む</a>。</p>';
+    return;
+  }
+
+  // 見出しに id を振って目次を作る
+  const list = document.getElementById("toc-list");
+  let n = 0;
+  for (const h of target.querySelectorAll("h2")) {
+    h.id = "s" + ++n;
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#" + h.id;
+    a.textContent = h.textContent.replace(/^\d+\.\s*/, "");
+    li.append(a);
+    list.append(li);
+  }
+  if (n) document.getElementById("toc").hidden = false;
+
+  // 仕様の中の oddity コードを、仕様どおりの規則で塗る
+  const paint = () => {
+    for (const el of target.querySelectorAll("pre > code")) {
+      const src = el.textContent;
+      // 表や擬似コードは括弧の対応が取れないので、そのときは塗らない
+      if (window.oddity) el.innerHTML = window.oddity.highlight(src);
+    }
+  };
+  if (window.oddity && document.readyState !== "loading") {
+    document.addEventListener("oddity-ready", paint);
+    setTimeout(paint, 0);
+  } else {
+    document.addEventListener("oddity-ready", paint);
+  }
+})();
+</script>
+</body>
+</html>
