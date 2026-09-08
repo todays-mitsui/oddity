@@ -4,7 +4,7 @@
 // ハイライトも本体のレキサ・パーサが返す役割（src/roles.rs）をそのまま塗っている。
 // 「役割は位置だけで決まる」（§0）ので、ハイライタもそれ以上のことは知らない。
 
-const REPO = "https://todays-mitsui.github.com/oddity"; // ← 公開先に合わせて直す
+const REPO = "https://todays-mitsui.github.io/oddity"; // ← 公開先に合わせて直す
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
