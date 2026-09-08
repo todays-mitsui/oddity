@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>oddity — 奇数項なら式、偶数項なら宣言</title>
-<meta name="description" content="項数の奇偶が意味を決めるジョーク言語。オペレータとオペランドを字種で区別せず、役割は位置だけで決まる。ブラウザで動かせます。">
+<meta name="description" content="項数の奇偶が意味を決めるジョーク言語。すべての関数が2引数で、トークンに字種の区別がない。ブラウザで動かせます。">
 <meta property="og:title" content="oddity">
 <meta property="og:description" content="奇数項なら式、偶数項なら宣言。項数の奇偶が意味を決める言語。">
 <link rel="stylesheet" href="./style.css">
@@ -26,7 +26,7 @@
 <header><div class="wrap">
   <h1>oddity</h1>
   <p class="tagline">奇数項なら式、偶数項なら宣言。</p>
-  <p class="sub">項数の奇偶が意味を決める言語。オペレータとオペランドを字種で区別せず、役割は<b>位置</b>だけで決まる。優先順位すら実行時に環境から引く。</p>
+  <p class="sub">項数の奇偶が意味を決める言語。すべての関数は2引数で、トークンに字種の区別はない。役割は括弧の中の位置だけで決まり、優先順位は実行時に環境から引かれる。</p>
 </div></header>
 
 <section><div class="wrap">
@@ -41,11 +41,15 @@
 
 <section id="concept"><div class="wrap">
   <h2>Concept</h2>
-  <p class="lead">決めたのは3つだけ。あとは全部そこから出てくる。</p>
+  <p class="lead">規則は最初の2つだけ。あとの2つはそこから導出される。</p>
   <div class="cards">
     <div class="card">
       <h3>空白が唯一の区切り</h3>
       <p><code>(x + y)</code> は3項で演算。<code>(x+y)</code> は1項で、<code>x+y</code> という名前の変数への参照。<code>1-1</code> は数ですらない。</p>
+    </div>
+    <div class="card">
+      <h3>すべての関数は2引数</h3>
+      <p>適用は常に中置で、関数呼び出し構文は存在しない。演算子適用そのものが呼び出しになる。<code>+</code> も <code>fact</code> も同格。</p>
     </div>
     <div class="card">
       <h3>項数の奇偶が意味を決める</h3>
@@ -68,7 +72,7 @@
 <section id="highlighting"><div class="wrap">
   <h2>Highlighting</h2>
   <p class="lead">構文ハイライトは原理的に不可能。ただし1種類だけ例外がある。</p>
-  <p>順位が実行時の値である以上、<b>どう結合するか</b>は静的には塗れない。だが<b>役割</b>のほうは、括弧の対応が取れた時点で確定する。このページのコードはすべて、処理系本体のレキサとパーサが返した役割そのままで塗ってある。</p>
+  <p>順位が実行時の値である以上、どう結合するかは静的には塗れない。役割のほうは括弧の対応が取れた時点で確定する。このページのコードはすべて、処理系本体のレキサとパーサが返した役割そのままで塗ってある。</p>
   <div class="legend">
     <span class="r0">オペランド</span>
     <span class="r1">オペレータ</span>
@@ -76,12 +80,12 @@
     <span class="r3">関数名</span>
     <span class="r4">構文エラー</span>
   </div>
-  <p>だから、こういう事故が目で見える。<code>==</code> の途中に空白を1つ入れると4項＝偶数＝関数宣言になり、シグネチャの2番目が<b>関数名として潰される</b>。構文エラーは出ない。</p>
+  <p>そのため書き間違いが目で見える。<code>==</code> の途中に空白を1つ入れると4項＝偶数＝関数宣言になり、シグネチャの2番目が関数名として潰される。構文エラーは出ない。</p>
 <pre><code data-odd>1 &lt;&lt;&lt; (a == b)</code></pre>
 <div class="out">()</div>
 <pre><code data-odd>1 &lt;&lt;&lt; (a = = b)</code></pre>
 <div class="out">&lt;fn =&gt;</div>
-<p class="note"><code>==</code> <code>!=</code> <code>!!</code> <code>&lt;=</code> <code>&gt;=</code> <code>&lt;&lt;&lt;</code> <code>&gt;&gt;&gt;</code> <code>++</code> <code>|&gt;</code> <code>&amp;&amp;</code> <code>||</code> のすべてが同じ形の地雷を持つ。</p>
+<p class="note"><code>==</code> <code>!=</code> <code>!!</code> <code>&lt;=</code> <code>&gt;=</code> <code>&lt;&lt;&lt;</code> <code>&gt;&gt;&gt;</code> <code>++</code> <code>|&gt;</code> <code>&amp;&amp;</code> <code>||</code> <code>-&gt;&gt;</code> のすべてが同じ形の地雷を持つ。</p>
 </div></section>
 
 <section id="play"><div class="wrap">
@@ -115,11 +119,11 @@
 <div class="out">21</div></div>
 <div><h3>再帰に <code>let rec</code> も Y コンビネータも要らない <span>§2.3</span></h3><p><code>{}</code> の偶数項は無名関数を返す。捨てられるフレームの中に関数自身の名前が束縛されていて、クロージャがそのフレームを捕まえているから、名前は生き残る。</p><pre><code data-odd>f = {n fact d (n &lt;= 1) ? 1 : {n * ((n - 1) fact d)}} ; 1 &lt;&lt;&lt; (5 f ())</code></pre>
 <div class="out">120</div></div>
-<div><h3>三項演算子ではなく、二項演算子2つ <span>§8.3</span></h3><p><code>(b ? t : f)</code> は5項で、左結合により <code>((b ? t) : f)</code>。偽が <code>()</code> だけなので、<code>?</code>（ガード）と <code>:</code>（Elvis）は単一の述語の裏表になる。3つ目の <code>!</code> は unless。</p><pre><code data-odd>1 &lt;&lt;&lt; (1 ? "t" : "f") &lt;&lt;&lt; (() ? "t" : "f") &lt;&lt;&lt; (() ! "u")</code></pre>
+<div><h3><code>?</code> と <code>:</code> は独立した二項演算子 <span>§8.3</span></h3><p><code>(b ? t : f)</code> は5項で、左結合により <code>((b ? t) : f)</code>。偽が <code>()</code> だけなので、述語は「左が <code>()</code> か」の一つで足りる。<code>?</code> はガード、<code>:</code> は Elvis、3つ目の <code>!</code> は unless。</p><pre><code data-odd>1 &lt;&lt;&lt; (1 ? "t" : "f") &lt;&lt;&lt; (() ? "t" : "f") &lt;&lt;&lt; (() ! "u")</code></pre>
 <div class="out">tfu</div></div>
 <div><h3>リストに終端は無い。マッチが判定を兼ねる <span>§8.2</span></h3><p><code>,</code> は二分木を作るだけで、リストとはその左スパインのこと。だから空リストが存在せず、<code>isEmpty</code> も要らない。要るのは <code>isPair</code> で、それは分割代入そのもの。</p><pre><code data-odd>xs = 1 , 2 , 3 ; (rest , y = xs) ; 1 &lt;&lt;&lt; rest &lt;&lt;&lt; " と " &lt;&lt;&lt; y</code></pre>
 <div class="out">(1 , 2) と 3</div></div>
-<div><h3>マッチ失敗はエラーではなく <code>()</code> <span>§8.1, §8.7</span></h3><p>予期される失敗は <code>()</code> で表して <code>?</code> <code>:</code> で処理する。プログラマの誤りは <code>!!</code> で、こちらは catch が無いので必ず最外まで飛ぶ。昇格は1行で書ける。</p><pre><code data-odd>1 &lt;&lt;&lt; (a , b = 5)</code></pre>
+<div><h3>マッチ失敗は <code>()</code> を返す <span>§8.1, §8.7</span></h3><p>予期される失敗は <code>()</code> で表して <code>?</code> <code>:</code> で処理する。プログラマの誤りは <code>!!</code> で、こちらは catch が無いので必ず最外まで飛ぶ。昇格は1行で書ける。</p><pre><code data-odd>1 &lt;&lt;&lt; (a , b = 5)</code></pre>
 <div class="out">()</div></div>
 <div><h3>演算子が何をするかは途中で変えられる <span>§4.5</span></h3><p>順位はグルーピング時に、関数は評価時に引かれる。同じ束縛の2つの側面が別のタイミングで参照されるので、中身の差し替えは即座に効くが、結合の仕方はそのブロックでは変わらない。</p><pre><code data-odd>(1 &lt;&lt;&lt; (1 + 2 * 3)) ; * = + ; (1 &lt;&lt;&lt; (1 + 2 * 3))</code></pre>
 <div class="out">96</div></div>
@@ -129,12 +133,12 @@
 <section id="mines"><div class="wrap">
   <h2>Mines</h2>
   <p class="lead">仕様に「地雷一覧」という節がある。</p>
-  <p>どれも設計の帰結であって、バグではない。エラーが出ないものだけを選んである。</p>
+  <p>どれも設計の帰結である。エラーが出ないものだけを選んである。</p>
 
   <h3><code>;</code> を1つ書き忘れると、ブロックが静かに関数宣言に化ける</h3>
 <pre><code data-odd>(1 &lt;&lt;&lt; "a") ; (1 &lt;&lt;&lt; "b") (1 &lt;&lt;&lt; "c")</code></pre>
 <div class="out">（何も出ない。終了コード 0）</div>
-<p class="note">4項＝偶数なので宣言になり、<code>(1 &lt;&lt;&lt; "a")</code> と <code>(1 &lt;&lt;&lt; "b")</code> はシグネチャとして評価されずに消える。ただし<b>2文だけのブロックは守られる</b>。<code>;</code> を落とすと2項＝構文エラーになるので。3文以上だけが黙って化ける。</p>
+<p class="note">4項＝偶数なので宣言になり、<code>(1 &lt;&lt;&lt; "a")</code> と <code>(1 &lt;&lt;&lt; "b")</code> はシグネチャとして評価されずに消える。ただし2文だけのブロックは守られる。<code>;</code> を落とすと2項＝構文エラーになるため。3文以上だけが黙って化ける。</p>
 
   <h3><code>1 = 1 + 1</code> は恒等式の顔をしたアキュムレータ</h3>
 <pre><code data-odd>1 = 1 + 1 ; 2 &lt;&lt;&lt; 1</code></pre>
@@ -144,7 +148,7 @@
   <h3><code>(b ? () : f)</code> は真でも <code>f</code> を返す</h3>
 <pre><code data-odd>1 &lt;&lt;&lt; (1 ? () : "f")</code></pre>
 <div class="out">f</div>
-<p class="note">真の枝の値が <code>()</code> だと <code>:</code> が必ず発火する。否定を素朴に <code>(b ? () : 1)</code> と書くと常に 1 になる。これが3つ目の短絡演算子 <code>!</code> を組み込みで持つべき理由になっている。</p>
+<p class="note">真の枝の値が <code>()</code> だと <code>:</code> が必ず発火する。否定を素朴に <code>(b ? () : 1)</code> と書くと常に 1 になる。3つ目の短絡演算子 <code>!</code> を組み込みで持つのはこのためである。</p>
 
   <h3>文字列と数は印字が同一で区別できない</h3>
 <pre><code data-odd>1 &lt;&lt;&lt; "1" &lt;&lt;&lt; " " &lt;&lt;&lt; 1 &lt;&lt;&lt; " " &lt;&lt;&lt; ("1" == 1)</code></pre>
@@ -154,14 +158,14 @@
 
 <section id="gallery"><div class="wrap">
   <h2>Gallery</h2>
-  <p class="lead">事故で手に入ったもの。</p>
+  <p class="lead">規則の副産物。</p>
 
   <h3>数式処理系</h3>
   <p>未束縛トークンは綴りどおりの文字列に評価され、文字列を適用しようとして失敗すると記号項というデータが残る。専用機構はゼロ。</p>
 <pre><code data-odd>1 &lt;&lt;&lt; (x + y) &lt;&lt;&lt; " " &lt;&lt;&lt; (+ * /)</code></pre>
 <div class="out">(x + y) (+ * /)</div>
 <h3>難読化</h3>
-  <p>役割が位置だけで決まるということは、<b>綴りに意味が無い</b>ということでもある。下は FizzBuzz で、関数名が fopen（切り詰め書き込み）を潰している。<code>1 -&gt;&gt; 5</code> は「fd 5 を開く式」に完全に化けている。</p>
+  <p>役割が位置だけで決まるので、綴りは役割を示さない。下は FizzBuzz で、関数名が fopen（切り詰め書き込み）を潰している。<code>1 -&gt;&gt; 5</code> は「fd 5 を開く式」に完全に化けている。</p>
 <pre><code data-odd>(&lt;&lt; -&gt;&gt; &gt;&gt; &lt;&lt; &gt; &gt;&gt; ! (1 &lt;&lt;&lt; &lt;&lt; % 15 == 0 ? "FizzBuzz" : (&lt;&lt; % 3 == 0 ? "Fizz") : (&lt;&lt; % 5 == 0 ? "Buzz") : &lt;&lt; &lt;&lt;&lt; "\n" ; &lt;&lt; + 1 -&gt;&gt; &gt;&gt;)) ; 1 -&gt;&gt; 5</code></pre>
 <div class="out">1
 2
@@ -169,7 +173,7 @@ Fizz
 4
 Buzz
 </div>
-<p class="note">上のハイライトを見れば、どれがオペレータでどれがオペランドかは分かる。<b>それ以上のことは誰にも分からない。</b></p>
+<p class="note">ハイライトで分かるのは、どれがオペレータでどれがオペランドかだけである。どう結合するかは実行時に決まるので、静的には分からない。</p>
 </div></section>
 
 <section id="get"><div class="wrap">
