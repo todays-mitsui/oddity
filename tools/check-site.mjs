@@ -30,6 +30,7 @@ globalThis.fetch = async (p) => {
 await import(pathToFileURL(new URL("app.js", root).pathname));
 await new Promise((r) => setTimeout(r, 200)); // boot() を待つ
 
+let fail = 0;
 const { run, analyze, highlight } = globalThis.oddity;
 
 // docs/oddity.wasm はビルド成果物なので、置いていかれていないか見ておく
@@ -41,6 +42,30 @@ const { run, analyze, highlight } = globalThis.oddity;
   if (newest > wasm) console.log("! docs/oddity.wasm が src より古い。tools/build-wasm.sh を走らせること");
 }
 
+// --- id の重複と、app.js が触る id が本当にあるか
+// （id が重複していると getElementById が別物を返して、まったく違う場所が書き換わる）
+{
+  const appjs = readFileSync(new URL("app.js", root), "utf8");
+  const wanted = [...appjs.matchAll(/getElementById\("([^"]+)"\)/g)].map((m) => m[1]);
+  for (const page of ["index.html", "spec.html"]) {
+    const src = readFileSync(new URL(page, root), "utf8");
+    const ids = [...src.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+    for (const id of new Set(ids)) {
+      if (ids.filter((x) => x === id).length > 1) {
+        console.log(`✗ ${page}: id="${id}" が重複している`);
+        fail++;
+      }
+    }
+  }
+  const index = readFileSync(new URL("index.html", root), "utf8");
+  const indexIds = [...index.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+  for (const id of new Set(wanted)) {
+    if (id === "src" || indexIds.includes(id)) continue;
+    console.log(`✗ app.js が getElementById("${id}") を呼ぶが index.html に無い`);
+    fail++;
+  }
+}
+
 const html = readFileSync(new URL("index.html", root), "utf8");
 const unesc = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
@@ -48,7 +73,7 @@ const blocks = [...html.matchAll(
   /<pre><code data-odd>([\s\S]*?)<\/code><\/pre>(?:\s*<div class="out">([\s\S]*?)<\/div>)?/g
 )];
 
-let fail = 0, checked = 0, painted = 0;
+let checked = 0, painted = 0;
 for (const [, rawSrc, rawOut] of blocks) {
   const src = unesc(rawSrc);
 

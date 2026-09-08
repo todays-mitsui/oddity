@@ -24,10 +24,13 @@ cargo test
 `docs/` が GitHub Pages 用の公式サイト。**インタプリタ本体をそのまま WebAssembly にして**プレイグラウンドで動かしている。
 
 ```sh
-./tools/build-wasm.sh          # docs/oddity.wasm を作り直す
+./tools/build-wasm.sh                    # docs/oddity.wasm を作り直す
 cd docs && python3 -m http.server 8000   # http://localhost:8000
-node tools/check-site.mjs      # サイトに載せた出力が本当にその出力か照合する
+node tools/check-site.mjs                # 載せた出力が本当にその出力か照合する（速い）
+./tools/check-browser.sh                 # 本物の Chrome で描画して検査する（5秒）
 ```
+
+検査が2段あるのは、**片方では捕まらない不具合があるため**。`check-site.mjs` は DOM を偽装して `app.js` を読み込むので、実行とハイライトは本番と同じ経路を通るが、`getElementById` が返す要素までは再現しない。実際に `<section id="hl">` とプレイグラウンドの `<code id="hl">` が衝突して、ハイライトの節がプレイグラウンドのコードで丸ごと上書きされる不具合を出したことがある。いまは前者が id の重複を静的に、後者が描画後の DOM を見て、どちらでも捕まる。
 
 公開するには GitHub の Settings → Pages で **Source を「Deploy from a branch」、branch を `main`、folder を `/docs`** にする。ビルドは要らない（`docs/oddity.wasm` はコミットされている）。`docs/app.js` の先頭の `REPO` だけ公開先に合わせて直すこと。
 
@@ -38,6 +41,7 @@ node tools/check-site.mjs      # サイトに載せた出力が本当にその�
 | `docs/app.js` | wasm の口、位置ハイライト、プレイグラウンド |
 | `docs/oddity.wasm` | `src/wasm.rs` のビルド成果物。import ゼロ・127KB |
 | `tools/check-site.mjs` | サイトの主張を機械で検算する。`app.js` を実物ごと読み込んで走らせる |
+| `tools/check-browser.sh` | Chrome を headless で走らせ、JS が動いたあとの DOM を検査する |
 
 **ハイライトは処理系本体がやっている。** 順位が実行時の値なので構文ハイライトは原理的に不可能（§4.3）だが、**役割**は括弧の対応が取れた時点で確定する（§0）。`src/roles.rs` がその役割を返し、サイトはそれを塗るだけ。だから `a = = b` の2番目の `=` が「関数名」の色で出る。
 
