@@ -1,7 +1,8 @@
 //! 値 (§7)
 //!
-//! oddity の型はシンボル・数・関数・cons・ユニットで尽きる。
+//! oddity の値は数・文字列・関数・cons・ユニットの5つ (§7)。
 //! 加えて、適用に失敗した式が残る「記号項」がある (付録)。
+//! 文字列は `Value::Sym` として持つ。仕様側の呼び名は「文字列」で、`Sym` は内部名。
 
 use crate::env::Env;
 use crate::parser::Items;
@@ -115,7 +116,7 @@ impl Value {
         Value::Term(Rc::new(Term { op, left, right }))
     }
 
-    /// 偽は `()` のみ。数の 0 も空トークン `""` も真 (§7.1)
+    /// 偽は `()` のみ。数の 0 も空文字列 `""` も真 (§7.1)
     pub fn truthy(&self) -> bool {
         !matches!(self, Value::Unit)
     }
@@ -142,7 +143,7 @@ impl Value {
     }
 }
 
-/// 内容比較 (§8.9)。シンボルは中身が綴りそのものである不変の文字列
+/// 内容比較 (§8.9)。文字列は不変で、内容は綴りそのもの
 pub fn value_eq(a: &Value, b: &Value) -> bool {
     use Value::*;
     match (a, b) {
@@ -162,7 +163,7 @@ pub fn value_eq(a: &Value, b: &Value) -> bool {
     }
 }
 
-/// `<` の族が使う順序。数どうし・シンボルどうしでしか定義されない
+/// `<` の族が使う順序。数どうし・文字列どうしでしか定義されない
 pub fn value_cmp(a: &Value, b: &Value) -> Option<std::cmp::Ordering> {
     match (a, b) {
         (Value::Num(x), Value::Num(y)) => Some(x.cmp(y)),
@@ -171,7 +172,7 @@ pub fn value_cmp(a: &Value, b: &Value) -> Option<std::cmp::Ordering> {
     }
 }
 
-/// 印字形。シンボルは綴りそのものが出るので、数 1 とシンボル `1` は
+/// 印字形。文字列は綴りそのものが出るので、数 1 と文字列 `1` は
 /// 印字が同一で区別できない (§8.9)
 pub fn display(v: &Value) -> String {
     let mut s = String::new();

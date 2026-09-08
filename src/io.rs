@@ -105,7 +105,7 @@ impl IoTable {
         let e = self.fds.get_mut(&fd)?;
         let r = e.reader.as_mut()?;
         if n <= 0 {
-            // 0文字読み。空シンボル `""` は真なので EOF と区別できる
+            // 0文字読み。空文字列 `""` は真なので EOF と区別できる
             return Some(String::new());
         }
         let mut out = String::new();

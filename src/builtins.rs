@@ -196,7 +196,7 @@ impl Interp {
                 _ => Value::term(Value::Builtin(b), lv, rv),
             },
 
-            // シンボルは連結について閉じている (§8.9)
+            // 文字列は連結について閉じている (§8.9)
             Concat => match (&lv, &rv) {
                 (Value::Sym(x), Value::Sym(y)) => Value::sym(&format!("{}{}", x, y)),
                 _ => Value::term(Value::Builtin(b), lv, rv),
@@ -218,7 +218,7 @@ impl Interp {
                 _ => Value::term(Value::Builtin(b), lv, rv),
             },
 
-            // シンボルの n 番目の文字（1文字のシンボルを返す）
+            // 文字列の n 番目の文字（1文字の文字列を返す）
             CharAt => match (&lv, &rv) {
                 (Value::Sym(s), Value::Num(n)) if *n >= 0 => {
                     match s.chars().nth(*n as usize) {
@@ -229,7 +229,7 @@ impl Interp {
                 _ => Value::term(Value::Builtin(b), lv, rv),
             },
 
-            // シンボルから数への唯一の経路。右オペランドは基数 (§8.9)
+            // 文字列から数への唯一の経路。右オペランドは基数 (§8.9)
             Parse => match (&lv, &rv) {
                 (Value::Sym(s), Value::Num(radix)) if (2..=36).contains(radix) => {
                     match i64::from_str_radix(s, *radix as u32) {

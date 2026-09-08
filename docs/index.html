@@ -62,7 +62,7 @@
 <div class="out">5</div>
 <pre><code data-odd>x = 2 ; y = 3 ; 1 &lt;&lt;&lt; (x+y)</code></pre>
 <div class="out">x+y</div>
-<p class="note">後者は未束縛トークンなので、自己評価フレームがシンボルとして自分自身を返す。<b>未定義エラーは存在しない。</b></p>
+<p class="note">後者は未束縛トークンなので、自己評価フレームが綴りどおりの文字列を返す。<b>未定義エラーは存在しない。</b></p>
 </div></section>
 
 <section id="highlighting"><div class="wrap">
@@ -146,10 +146,10 @@
 <div class="out">f</div>
 <p class="note">真の枝の値が <code>()</code> だと <code>:</code> が必ず発火する。否定を素朴に <code>(b ? () : 1)</code> と書くと常に 1 になる。これが3つ目の短絡演算子 <code>!</code> を組み込みで持つべき理由になっている。</p>
 
-  <h3>シンボルと数は印字が同一で区別できない</h3>
+  <h3>文字列と数は印字が同一で区別できない</h3>
 <pre><code data-odd>1 &lt;&lt;&lt; "1" &lt;&lt;&lt; " " &lt;&lt;&lt; 1 &lt;&lt;&lt; " " &lt;&lt;&lt; ("1" == 1)</code></pre>
 <div class="out">1 1 ()</div>
-<p class="note">引用はクォートであって型ではない。<code>"1"</code> はシンボル <code>1</code> であって数ではないので、数値フレームを通らない。代わりに、数を潰したあとの un-shadow 手段になる。</p>
+<p class="note">引用は型を導入しない。<code>"1"</code> は文字列 <code>1</code> であって数ではないので、数値フレームを通らない。代わりに、数を潰したあとの un-shadow 手段になる。</p>
 </div></section>
 
 <section id="gallery"><div class="wrap">
@@ -157,7 +157,7 @@
   <p class="lead">事故で手に入ったもの。</p>
 
   <h3>数式処理系</h3>
-  <p>未束縛トークンは自己評価し、シンボルを適用しようとして失敗すると記号項というデータが残る。専用機構はゼロ。</p>
+  <p>未束縛トークンは綴りどおりの文字列に評価され、文字列を適用しようとして失敗すると記号項というデータが残る。専用機構はゼロ。</p>
 <pre><code data-odd>1 &lt;&lt;&lt; (x + y) &lt;&lt;&lt; " " &lt;&lt;&lt; (+ * /)</code></pre>
 <div class="out">(x + y) (+ * /)</div>
 <h3>難読化</h3>

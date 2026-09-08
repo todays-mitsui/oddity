@@ -174,7 +174,7 @@ impl Interp {
     pub fn eval_item(&mut self, item: &Rc<Item>, env: &Env) -> R<Value> {
         match &**item {
             Item::Word(w, _) => Ok(env.resolve(w)),
-            // 引用は環境を引かない。シンボルそのものに評価される (§1.3)
+            // 引用は環境を引かない。文字列そのものに評価される (§1.3)
             Item::Quoted(s, _) => Ok(Value::Sym(s.clone())),
             Item::Group(k, items, _) => self.eval_group(*k, items, env),
         }
