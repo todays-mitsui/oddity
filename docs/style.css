@@ -207,3 +207,14 @@ footer { padding: 40px 0 64px; color: var(--fg-dim); font-size: 14px; }
 footer a { color: var(--fg-dim); }
 
 .note { font-size: 14px; color: var(--fg-dim); }
+
+/* 基本説明の項数一覧と、小さい画面でのナビゲーション */
+.arity { display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; margin: 0 0 24px; }
+.arity dt { font-weight: 600; }
+.arity dd { margin: 0; }
+section { scroll-margin-top: 60px; }
+@media (max-width: 640px) {
+  nav .wrap { gap: 14px; overflow-x: auto; white-space: nowrap; }
+  .arity { grid-template-columns: 1fr; gap: 4px; }
+  .arity dd { margin-bottom: 8px; }
+}

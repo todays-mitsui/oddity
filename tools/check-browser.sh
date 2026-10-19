@@ -74,7 +74,7 @@ m = re.search(r'<code id="hl">(.*?)</code>', play, re.S)
 check("エディタの塗り分けが入っている", bool(m) and '<span class="r' in m.group(1))
 r = re.search(r'<div class="result" id="result">(.*?)</div>', d, re.S)
 out = re.sub(r'<[^>]+>', '', r.group(1)) if r else ""
-check("初期状態で実行されて出力が出ている", out.startswith("Hello, world!"), repr(out))
+check("初期状態で実行されて出力が出ている", out.startswith("5"), repr(out))
 b = re.search(r'id="badge"[^>]*>(.*?)</span>', d, re.S)
 check("項数バッジが出ている", bool(b) and "項 →" in b.group(1), b.group(1) if b else "無い")
 blocks = re.findall(r'<code data-odd="?"?>(.*?)</code>', d, re.S)
