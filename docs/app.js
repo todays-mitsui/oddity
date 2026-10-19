@@ -151,19 +151,15 @@ const EXAMPLES = {
 1 <<< "10! = " <<< (10 fact ()) <<< "\\n"`,
 
   "FizzBuzz": `(i fizzbuzz last
-    (i > last) ! {
-        ( ((i % 15) == 0) ? (1 <<< "FizzBuzz")
-        : ( ((i % 3) == 0) ? (1 <<< "Fizz")
-          : ( ((i % 5) == 0) ? (1 <<< "Buzz")
-            : (1 <<< i)
-            )
-          )
-        ) ;
-        (1 <<< "\\n") ;
-        ((i + 1) fizzbuzz last)
+    i > last ! {
+        1 <<< i % 15 == 0 ? "FizzBuzz"
+          : (i % 3 == 0 ? "Fizz")
+          : (i % 5 == 0 ? "Buzz")
+          : i <<< "\\n" ;
+        i + 1 fizzbuzz last
     }
 ) ;
-(1 fizzbuzz 20)`,
+1 fizzbuzz 20`,
 
   "リストを畳む": `// isEmpty は要らない。要るのは isPair で、それは分割代入そのもの
 (acc sum xs
